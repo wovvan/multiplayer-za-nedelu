@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  multiplayer-za-nedelu:
+    build: .
+    image: multiplayer-za-nedelu:1.0.0
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - HEARTBEAT_INTERVAL_MS=30000
+    restart: unless-stopped
+
