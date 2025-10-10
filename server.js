@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
-import { randomUUID } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 // ------------ Config ------------
 const PORT = parseInt(process.env.PORT || '8080', 10);
