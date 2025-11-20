@@ -80,31 +80,16 @@ function start() {
     const joinMsg = JSON.stringify({ type: 'join', clientId: ws.id, clients: wss.clients.size });
     broadcastExcept(ws, wss.clients, joinMsg);
 
-    ws.on('message', (data) => {
-      // Поддерживаем только текстовый JSON
-      if (!(data instanceof Buffer) && typeof data !== 'string') {
-        return sendJson(ws, { type: 'error', error: 'Only text messages are supported' });
+    ws.on('message', (data, isBinary) => {
+      // Теперь поддерживаем только бинарные сообщения и просто ретранслируем байты
+      if (!isBinary && !(data instanceof Buffer)) {
+        return sendJson(ws, { type: 'error', error: 'Only binary messages are supported' });
       }
 
-      const text = data.toString('utf8');
+      const buffer = data instanceof Buffer ? data : Buffer.from(data);
 
-      const parsed = safeParseJson(text);
-      if (!parsed.ok) {
-        return sendJson(ws, { type: 'error', error: parsed.error });
-      }
-
-      // Обогащаем событие служебной мета-информацией
-      const envelope = {
-        type: 'event',
-        from: ws.id,
-        ts: Date.now(),
-        payload: parsed.value
-      };
-
-      const buf = JSON.stringify(envelope);
-
-      // Рассылка всем кроме отправителя
-      broadcastExcept(ws, wss.clients, buf);
+      // Рассылка всем кроме отправителя без какого‑либо изменения полезной нагрузки
+      broadcastExcept(ws, wss.clients, buffer);
     });
 
     ws.on('close', () => {
